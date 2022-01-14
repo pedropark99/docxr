@@ -19,28 +19,27 @@ docx_add_text <- function(docx, text){
 
 
 
-patterns <- c(
-  "[*]{3}", "[*]{2}", "[*]",
-  "[_]{3}", "[_]{2}", "[_]",
-  "`"
-)
 
-
-
-
-process_paragraphs <- function(text){
+process_paragraphs <- function(text, markdown_mode = TRUE){
   ### Normalize line endings
   text <- stringr::str_replace_all(text, "\r\n", "\n")
-  pars <- stringr::str_split(text, "\n\n") |> unlist()
 
-  pars <- split_inline_runs(pars)
+  ### Get list of paragraphs
+  pars <- stringr::str_split(text, "\n\n") |>
+    unlist() |>
+    as.list()
+
+  pars <- split_markdown_runs(pars)
 
   return(pars)
 }
 
+
 texto <- "Estou testando **uma** nova funcionalidade
 
-Quem sabe a gente consegue;"
+Quem sabe a gente `consegue`;"
+
+a <- process_paragraphs(texto)
 
 a <- c(
   "Estou testando **uma** nova *funcionalidade*",
@@ -48,22 +47,31 @@ a <- c(
 )
 
 
+markdown_patterns <- c(
+  "[*]{3}", "[*]{2}", "[*]",
+  "[_]{3}", "[_]{2}", "[_]",
+  "`"
+)
 
-split_inline_runs <- function(text){
+split_markdown_runs <- function(pars){
 
-  for (pattern in patterns) {
-    text <- str_split(text, pattern) |>
-      unlist()
+  for (pattern in markdown_patterns) {
+    pars <- lapply(
+      pars,
+      function(x) str_split(x, pattern) |> unlist()
+    )
   }
 
-  return(text)
+  return(pars)
 }
 
 
-split_inline_runs(a)
-
-
-
+# get_run_ids <- function(pars){
+#
+# }
+#
+#
+# get_run_ids(a)
 
 
 # If you build a pipe chain of commands
