@@ -18,13 +18,51 @@ docx_add_text <- function(docx, text){
 }
 
 
-format_paragraphs <- function(pars){
-  pars <- stringr::str_c("<w:p>", pars, "<w:p/>")
+
+patterns <- c(
+  "[*]{3}", "[*]{2}", "[*]",
+  "[_]{3}", "[_]{2}", "[_]",
+  "`"
+)
+
+
+
+
+process_paragraphs <- function(text){
+  ### Normalize line endings
+  text <- stringr::str_replace_all(text, "\r\n", "\n")
+  pars <- stringr::str_split(text, "\n\n") |> unlist()
+
+  pars <- split_inline_runs(pars)
+
   return(pars)
 }
 
-texto <- "Teste"
-texto <- format_paragraphs(texto)
+texto <- "Estou testando **uma** nova funcionalidade
+
+Quem sabe a gente consegue;"
+
+a <- c(
+  "Estou testando **uma** nova *funcionalidade*",
+  "Quem sabe a gente `consegue`;"
+)
+
+
+
+split_inline_runs <- function(text){
+
+  for (pattern in patterns) {
+    text <- str_split(text, pattern) |>
+      unlist()
+  }
+
+  return(text)
+}
+
+
+split_inline_runs(a)
+
+
 
 
 
@@ -51,3 +89,10 @@ texto <- format_paragraphs(texto)
 #
 # xml2::as_list(a)
 
+
+
+
+
+md_formatting <- function(text){
+
+}
