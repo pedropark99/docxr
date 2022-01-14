@@ -1,26 +1,3 @@
-library(stringr)
-library(xml)
-library(knitr)
-library(readr)
-library(magrittr)
-library(fs)
-library(purrr)
-
-render_markdown()
-knit("teste.Rmd")
-
-
-chars <- "[a-zA-ZãõâêîôûáéíóúÃÕÂÊÎÔÛÁÉÍÓÚ0-9]|[:space:]|[-!@#$%&?/|\\[\\](){}+=_\"'´^~;:.,<>]|\\\\"
-patt1 <- str_c("[*]", "(", chars, ")*", "[*]")
-patt2 <- str_c("[_]", "(", chars, ")*", "[_]")
-patt3 <- str_c("[`]", "(", chars, ")*", "[`]")
-patt4 <- str_c("[_]{2}", "(", chars, ")*", "[_]{2}")
-patt5 <- str_c("[*]{2}", "(", chars, ")*", "[*]{2}")
-
-
-patterns <- list(
-  inline_formatting = str_c(patt1, patt2, patt3, patt4, patt5, sep = "|", collapse = "")
-)
 
 namespaces <- c(
   "xmlns:aink" = "http://schemas.microsoft.com/office/drawing/2016/ink",
@@ -59,57 +36,12 @@ namespaces <- c(
 
 
 
-
-
 start_document <- function(){
-  doc <- xml_new_root(.value = "document")
-  xml_attrs(doc) <- namespaces
-  xml_add_child(doc, "w:body")
-  
+  doc <- xml2::xml_new_root(.value = "w:document")
+  xml2::xml_attrs(doc) <- namespaces
+  xml2::xml_add_child(doc, "w:body")
+
   return(doc)
 }
 
-
-read_md <- function(path, encoding = "UTF-8"){
-  text <- read_file(path, locale = locale(encoding = encoding))
-  file <- unlist(str_split(text, "\n"))
-  begin <- max(str_which(file, "^---([:space:])?$")) + 1
-  file <- file[begin:length(file)]
-  return(file)
-}
-
-arq <- read_md("teste.md")
-
-chunk_start_line <- function(x){
-  n <- seq_along(x)
-  return(x[n %% 2 != 0])
-}
-
-chunk_end_line <- function(x){
-  n <- seq_along(x)
-  return(x[n %% 2 == 0])
-}
-
-
-
-get_paragraphs <- function(file){
-  chunk_lines <- find_chunk_lines(file)
-  lines <- seq_along(file)
-  pars <- file[ !(lines %in% chunk_lines) ]
-  
-  return(pars)
-}
-
-ps <- get_paragraphs(arq)
-
-
-format_paragraphs <- function(pars){
-  pars <- str_c("<w:p>", pars, "<w:p/>")
-  
-  return(pars)
-}
-
-
-
-
-
+main_document <- start_document()
