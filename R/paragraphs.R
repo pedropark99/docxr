@@ -53,12 +53,14 @@ markdown_patterns <- c(
   "(?<!\\\\)`"
 )
 
+
+
 split_markdown_runs <- function(pars){
 
   for (pattern in markdown_patterns) {
     pars <- lapply(
       pars,
-      function(x) str_split(x, pattern) |> unlist()
+      function(x) stringr::str_split(x, pattern) |> unlist()
     )
   }
 
@@ -66,9 +68,42 @@ split_markdown_runs <- function(pars){
 }
 
 
-# get_run_ids <- function(pars){
-#
-# }
+inline_patterns <- list(
+  asterisks = c(
+    "\\*\\*\\*(([^\\s]|[\\s])+?)\\*\\*\\*",
+    "\\*\\*(([^\\s]|[\\s])+?)\\*\\*",
+    "\\*(([^\\s]|[\\s])+?)\\*"
+  ),
+  underscores = c(
+    "___(([^\\s]|[\\s])+?)___",
+    "__(([^\\s]|[\\s])+?)__",
+    "_(([^\\s]|[\\s])+?)_"
+  )
+)
+
+
+split_runs <- function(pars){
+
+  positions <- lapply(
+    pars,
+    function(x){
+      str_locate_all(x, inline_patterns$asterisks)
+    }
+  )
+
+}
+
+
+t <- "Teste **avisa** que isso é **um** teste"
+
+p <- str_locate_all(
+  t,
+  inline_patterns[[1]][2]
+)
+
+
+str_sub(t, start = p[[1]][, "start"], end = p[[1]][, "end"])
+
 #
 #
 # get_run_ids(a)
