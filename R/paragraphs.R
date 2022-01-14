@@ -48,9 +48,9 @@ a <- c(
 
 
 markdown_patterns <- c(
-  "[*]{3}", "[*]{2}", "[*]",
-  "[_]{3}", "[_]{2}", "[_]",
-  "`"
+  "(?<!\\\\)[*]{3}", "(?<!\\\\)[*]{2}", "(?<!\\\\)[*]",
+  "(?<!\\\\)[_]{3}", "(?<!\\\\)[_]{2}", "(?<!\\\\)[_]",
+  "(?<!\\\\)`"
 )
 
 split_markdown_runs <- function(pars){
@@ -101,6 +101,3 @@ split_markdown_runs <- function(pars){
 
 
 
-md_formatting <- function(text){
-
-}
