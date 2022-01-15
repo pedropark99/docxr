@@ -1,22 +1,94 @@
 
 
+### Paragraph object
+#
+#
+# A par object is a list object with 2 elements:
+# - text: the raw text of the paragraph;
+# - properties: the properties of the paragraph (w:pPr);
+#
+
+
+default_properties <- list(
+  jc = "both",
+  spacing = c("before" = "360", "after" = "120", "line" = "480", "lineRule" = "auto", "beforeAutospacing" = "0", "afterAutospacing" = "0")
+)
+
+
+par <- structure(
+  list(
+    list(text = "Testando um paragrafo interessante", properties = NULL),
+    list(text = "Outro parágrafo muito interessante", properties = NULL),
+    list(text = "Não sei o que escrever nesse parágrafo", properties = NULL),
+    list(text = "Quem sabe amanhã vai", properties = NULL)
+  ),
+  class = "docx_par"
+)
+
+
 docx_add_text <- function(docx, text){
   ### Move to w:body
   body <- xml2::xml_find_first(docx, "w:body")
-  for (i in seq_along(text)) {
-    body |>
-      xml2::xml_add_child("w:p") |>
-      xml2::xml_add_child("w:r") |>
-      xml2::xml_add_child("w:rPr")
+
+  ## If is a simple character vector:
+  if (is.character(text)) {
+    for (i in seq_along(text)) {
+      body |>
+        xml2::xml_add_child("w:p")
+    }
+
+    ### After adding the tags, fill them with the text
+    all_pars <- xml2::xml_find_all(body, "w:p")
+    xml2::xml_text(all_pars) <- text
   }
 
-  ### After adding the tags, fill them with the text
-  all_pars <- xml2::xml_find_all(body, "w:p")
-  #xml2::xml_text(all_pars) <- text
+
+  ## But if user is giving paragraphs
+  ## we should build differently
+  if (inherits(text, "docx_par")) {
+    pars <- purrr::transpose(text)
+    contents <- pars$text
+    prs <- pars$properties
+
+    for (i in seq_along(contents)) {
+      body |>
+        xml2::xml_add_child("w:p")
+    }
+
+    all_pars <- xml2::xml_find_all(body, "//w:p")
+    for (i in seq_along(contents)) {
+      for (j in seq_along(prs[[i]])) {
+        all_pars[[i]] |>
+          xml2::xml_add_child("w:rPr")
+      }
+    }
+  }
 
   return(docx)
 }
 
+
+
+
+build_paragraph_properties <- function(properties){
+
+  if(is.null(properties)){
+    prs <- get("default_properties")
+  }
+
+  prs <- lapply(properties, pair_wise_attrs)
+
+  return(prs)
+}
+
+build_paragraph_properties(default_properties)
+
+
+
+
+
+pr_names <- names(default_properties)
+values <-
 
 
 
@@ -35,16 +107,6 @@ process_paragraphs <- function(text, markdown_mode = TRUE){
 }
 
 
-texto <- "Estou testando **uma** nova funcionalidade
-
-Quem sabe a gente `consegue`;"
-
-a <- process_paragraphs(texto)
-
-a <- c(
-  "Estou testando **uma** nova *funcionalidade*",
-  "Quem sabe a gente `consegue`;"
-)
 
 
 markdown_patterns <- c(
@@ -82,31 +144,6 @@ inline_patterns <- list(
 )
 
 
-split_runs <- function(pars){
-
-  positions <- lapply(
-    pars,
-    function(x){
-      str_locate_all(x, inline_patterns$asterisks)
-    }
-  )
-
-}
-
-
-t <- "Teste **avisa** que isso é **um** teste"
-
-p <- str_locate_all(
-  t,
-  inline_patterns[[1]][2]
-)
-
-
-str_sub(t, start = p[[1]][, "start"], end = p[[1]][, "end"])
-
-#
-#
-# get_run_ids(a)
 
 
 # If you build a pipe chain of commands
@@ -131,6 +168,7 @@ str_sub(t, start = p[[1]][, "start"], end = p[[1]][, "end"])
 #   xml2::xml_add_child("p")
 #
 # xml2::as_list(a)
+
 
 
 

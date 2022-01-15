@@ -63,18 +63,18 @@ set_par_attrs <- function(doc, pars){
   attr_list <- map(pars, `[[`, "attr")
   not_null <- map_lgl(attr_list, is_not_null)
   index <- seq_along(pars)[not_null]
-  
+
   ### If none attribute needs to be set, return early
   if(length(index) == 0){
     return(doc)
   }
-  
+
   body_node <- xml_child(doc, "w:body")
   par_nodes <- xml_find_all(body_node, "w:p")
   for(i in index){
     xml_attrs(par_nodes[[i]]) <- attr_list[[i]]
   }
-  
+
   return(doc)
 }
 
@@ -85,30 +85,30 @@ build_text_nodes <- function(doc, pars){
   body_node <- xml_child(doc, "w:body")
   par_nodes <- xml_find_all(body_node, "w:p")
   texts <- map(pars, `[[`, "text")
-  
+
   for(i in seq_along(texts)){
     xml_add_child(par_nodes[[i]], "w:r")
     run_node <- xml_child(par_nodes[[i]], "w:r")
     xml_add_child(run_node, "w:t")
   }
-  
+
   text_nodes <- xml_find_all(par_nodes, "w:r/w:t")
   xml_text(text_nodes) <- unlist(texts)
-  
+
   return(doc)
 }
 
 build_paragraphs(vec) %>% xml_contents() %>% as.character()
 
 
-build_paragraphs <- function(pars){ %>% 
+build_paragraphs <- function(pars){
     body_node <- xml_child(doc, "w:body")
-    
+
     for(i in seq_along(pars)) xml_add_child(body_node, "w:p", .where = "after")
     par_nodes <- xml_find_all(body_node, "w:p")
     doc <- set_par_attrs(doc, pars)
     doc <- build_text_nodes(doc, pars)
-    
+
     return(par_nodes)
 }
 
@@ -127,11 +127,11 @@ docx_add_text <- function(xml, pars){
   xml <- xml
   paragraphs <- build_paragraphs(pars)
   body_node <- xml_child(xml, "w:body")
-  
+
   for(par in paragraphs){
     xml_add_child(body_node, par, .where = "after")
   }
-  
+
   return(xml)
 }
 
